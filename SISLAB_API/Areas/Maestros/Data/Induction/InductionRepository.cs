@@ -129,6 +129,25 @@ public class InductionRepository
 
 
 
+    public async Task AddCommentAsyncD(int new_id, CommentR comment)
+    {
+        using (var connection = new MySqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+            var sql = "INSERT INTO comments (video_id, comment, user_id) VALUES (@VideoId, @CommentText, @UserId)";
+            using (var cmd = new MySqlCommand(sql, connection))
+            {
+                cmd.Parameters.AddWithValue("@VideoId", new_id);
+                cmd.Parameters.AddWithValue("@CommentText", comment.comment);
+                cmd.Parameters.AddWithValue("@UserId", comment.UserId);
+                await cmd.ExecuteNonQueryAsync();
+            }
+        }
+    }
+
+
+
+
 
 
 

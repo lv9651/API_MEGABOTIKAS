@@ -27,6 +27,9 @@ builder.Services.AddScoped<NoticiaRepository>();
 builder.Services.AddScoped<DocumentRepository>();
 builder.Services.AddScoped<InductionRepository>();
 builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<AgendaRepository>();
+builder.Services.AddScoped<EmailRepository>();
+builder.Services.AddScoped<NotificationRepository>();
 
 
 // Servicios
@@ -36,6 +39,9 @@ builder.Services.AddScoped<NoticiaService>();
 builder.Services.AddScoped<InductionService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<DataTransferService>();
+builder.Services.AddScoped<AgendaService>();
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<NotificationService>();
 // Registrar DocumentoService con la ruta compartida
 builder.Services.AddScoped<DocumentoService>(provider =>
     new DocumentoService(
