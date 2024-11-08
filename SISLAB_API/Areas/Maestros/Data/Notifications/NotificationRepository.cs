@@ -50,11 +50,19 @@ public class NotificationRepository
         {
             await connection.OpenAsync();
 
-            var query = "UPDATE notifications SET is_read = TRUE WHERE id IN (@Ids) AND user_id = @UserId";
+            // Create a parameterized list for the IDs
+            var idParams = notificationIds.Select((id, index) => $"@Id{index}").ToList();
+            var query = $"UPDATE notifications SET is_read = TRUE WHERE id IN ({string.Join(",", idParams)}) AND user_id = @UserId";
+
             using (var command = new MySqlCommand(query, connection))
             {
                 command.Parameters.AddWithValue("@UserId", userId);
-                command.Parameters.AddWithValue("@Ids", string.Join(",", notificationIds));
+
+                // Add each ID as a parameter
+                for (int i = 0; i < notificationIds.Count; i++)
+                {
+                    command.Parameters.AddWithValue($"@Id{i}", notificationIds[i]);
+                }
 
                 var affectedRows = await command.ExecuteNonQueryAsync();
                 return affectedRows > 0;

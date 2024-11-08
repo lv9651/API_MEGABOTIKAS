@@ -20,14 +20,16 @@ public class AgendaRepository
             using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
-                var query = "INSERT INTO Agenda (meeting_name, dni, date, time) VALUES (@MeetingName, @Dni, @Date, @Time)";
+                var query = "INSERT INTO Agenda (meeting_name, dni, date, time,time_2,nombre) VALUES (@MeetingName, @Dni, @Date, @Time,@Time_2,@nombre)";
                 using (var command = new MySqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@MeetingName", item.MeetingName);
                     command.Parameters.AddWithValue("@Dni", item.Dni);
                     command.Parameters.AddWithValue("@Date", item.Date);
                     command.Parameters.AddWithValue("@Time", item.Time);
-                    command.ExecuteNonQuery();
+                command.Parameters.AddWithValue("@Time_2", item.Time_2);
+                command.Parameters.AddWithValue("@nombre", item.nombre);
+                command.ExecuteNonQuery();
                 }
             }
         }
@@ -67,6 +69,8 @@ public class AgendaRepository
                                 Dni = reader.GetString("dni"),
                                 Date = reader.GetDateTime("date").ToString("yyyy-MM-dd"),
                                 Time = reader.GetTimeSpan("time"),
+                                Time_2 = reader.GetTimeSpan("time_2"),
+                                nombre = reader.GetString("nombre"),
                             });
                         }
                     }

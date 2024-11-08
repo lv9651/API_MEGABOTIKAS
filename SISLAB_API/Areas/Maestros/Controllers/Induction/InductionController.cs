@@ -156,6 +156,26 @@ namespace SISLAB_API.Areas.Maestros.Controllers
             }
         }
 
+        [HttpPost("{id}/commentsN")]
+        public async Task<IActionResult> AddCommentN(int id, [FromBody] CommentN comment)
+        {
+            if (comment == null || string.IsNullOrEmpty(comment.comment))
+            {
+                return BadRequest("Invalid comment data.");
+            }
+
+            try
+            {
+                await _inductionservice.AddCommentAsyncN(id, comment);
+                return StatusCode(201, new { message = "Comment added successfully" });
+            }
+            catch (Exception ex)
+            {
+                // Manejo de errores
+                return StatusCode(500, new { message = $"Error adding comment: {ex.Message}" });
+            }
+        }
+
 
         [HttpGet("{id}/comments")]
         public async Task<IActionResult> GetComments(int id)
@@ -163,6 +183,22 @@ namespace SISLAB_API.Areas.Maestros.Controllers
             try
             {
                 var comments = await _inductionservice.GetCommentsForVideoAsync(id);
+                return Ok(comments);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error fetching comments: {ex.Message}");
+                return StatusCode(500, "Error fetching comments");
+            }
+        }
+
+
+        [HttpGet("{id}/commentsN")]
+        public async Task<IActionResult> GetCommentsN(int id)
+        {
+            try
+            {
+                var comments = await _inductionservice.GetCommentsForVideoAsyncN(id);
                 return Ok(comments);
             }
             catch (Exception ex)

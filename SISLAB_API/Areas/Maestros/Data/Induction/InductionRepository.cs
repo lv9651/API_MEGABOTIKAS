@@ -129,6 +129,26 @@ public class InductionRepository
 
 
 
+
+    public async Task AddCommentAsyncN(int videoId, CommentN comment)
+    {
+        using (var connection = new MySqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+            var sql = "INSERT INTO comments_new (new_id, comment, dni) VALUES (@VideoId, @CommentText, @UserId)";
+            using (var cmd = new MySqlCommand(sql, connection))
+            {
+                cmd.Parameters.AddWithValue("@VideoId", videoId);
+                cmd.Parameters.AddWithValue("@CommentText", comment.comment);
+                cmd.Parameters.AddWithValue("@UserId", comment.UserId);
+                await cmd.ExecuteNonQueryAsync();
+            }
+        }
+    }
+
+
+
+
     public async Task AddCommentAsyncD(int new_id, CommentR comment)
     {
         using (var connection = new MySqlConnection(_connectionString))
@@ -199,6 +219,70 @@ public class InductionRepository
 
         return comments;
     }
+
+
+
+
+
+
+
+    public async Task<IEnumerable<Comment>> GetCommentsByVideoIdAsyncN(int videoId)
+    {
+        var comments = new List<Comment>();
+
+        try
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                var sql = @"
+                SELECT comments_new.comment, users.nombre AS user_name, users.id UserId
+    FROM comments_new
+    JOIN users ON comments_new.dni = users.dni  COLLATE utf8mb4_unicode_ci
+    WHERE comments_new.new_id  = @VideoId";
+
+                using (var cmd = new MySqlCommand(sql, connection))
+                {
+                    cmd.Parameters.AddWithValue("@VideoId", videoId);
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            comments.Add(new Comment
+                            {
+                                comment = reader.GetString(0),
+                                user_name = reader.GetString(1),
+                                UserId = reader.GetInt32(2) // Asegúrate de que tu clase Comment tenga una propiedad para UserName
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        catch (MySqlException ex)
+        {
+            // Maneja excepciones específicas de MySQL
+            Console.Error.WriteLine($"MySQL error: {ex.Message}");
+            // Aquí podrías lanzar una excepción personalizada o devolver un resultado de error
+        }
+        catch (Exception ex)
+        {
+            // Maneja cualquier otra excepción
+            Console.Error.WriteLine($"Error fetching comments: {ex.Message}");
+            // Aquí podrías lanzar una excepción personalizada o devolver un resultado de error
+        }
+
+        return comments;
+    }
+
+
+
+
+
+
+
+
+
 
 
     public async Task<IEnumerable<VideoProgress>> GetVideoProgressAsync(string userId, string module)

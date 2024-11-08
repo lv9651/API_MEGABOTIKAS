@@ -46,11 +46,24 @@ namespace SISLAB_API.Areas.Maestros.Services
         }
 
 
+        public async Task AddCommentAsyncN(int videoId, CommentN comment)
+        {
+            await _InductionRepository.AddCommentAsyncN(videoId, comment);
+        }
+
+
 
         public async Task<IEnumerable<Comment>> GetCommentsForVideoAsync(int videoId)
         {
             return await _InductionRepository.GetCommentsByVideoIdAsync(videoId);
         }
+
+
+        public async Task<IEnumerable<Comment>> GetCommentsForVideoAsyncN(int videoId)
+        {
+            return await _InductionRepository.GetCommentsByVideoIdAsyncN(videoId);
+        }
+
 
 
 
