@@ -86,7 +86,7 @@ public class InductionRepository
         // Elimina el video del sistema de archivos
         if (!string.IsNullOrEmpty(videoUrl))
         {
-            var videoPath = Path.Combine(@"\\192.168.154.12\fileserver\TI\Velasquez\Videos", videoUrl);
+            var videoPath = Path.Combine(@"\\PANDAFILE\Intranet\Videos", videoUrl);
             if (File.Exists(videoPath))
             {
                 File.Delete(videoPath);

@@ -58,7 +58,7 @@ namespace SISLAB_API.Areas.Maestros.Controllers
                 {
                     // Generar un nombre único o ruta para guardar la imagen
                     string uniqueFileName = $"{Guid.NewGuid()}_{image.Key}";
-                    string imageUrl = Path.Combine(@"\\192.168.154.12\fileserver\TI\Velasquez\Img", uniqueFileName);
+                    string imageUrl = Path.Combine(@"\\PANDAFILE\Intranet\Img", uniqueFileName);
 
                     using (var fileStream = new FileStream(imageUrl, FileMode.Create))
                     {
@@ -99,7 +99,7 @@ namespace SISLAB_API.Areas.Maestros.Controllers
             {
                 // Generar el nombre del archivo usando el ID
                 string imageFileName = $"{id}"; // Cambia la extensión si es necesario
-                string imagePath = Path.Combine(@"\\192.168.154.12\fileserver\TI\Velasquez\Img", imageFileName);
+                string imagePath = Path.Combine(@"\\PANDAFILE\Intranet\Img", imageFileName);
                 Console.WriteLine($"Attempting to retrieve image: {imageFileName}");
                 if (!System.IO.File.Exists(imagePath))
                 {

@@ -1,7 +1,5 @@
-﻿using Dapper;
-using MySql.Data.MySqlClient;
+﻿using MySql.Data.MySqlClient;
 using SISLAB_API.Areas.Maestros.Models;
-using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
 
@@ -9,26 +7,29 @@ public class UserRepository
 {
     private readonly string? _connectionString;
 
+    // Constructor que recibe la cadena de conexión desde la configuración
     public UserRepository(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("SislabConnection");
     }
 
+    // Método para crear la conexión con la base de datos
     private MySqlConnection CreateConnection()
     {
         return new MySqlConnection(_connectionString);
     }
 
+    // Método para obtener todos los usuarios
     public async Task<IEnumerable<User>> GetAllUsersAsync()
     {
         var users = new List<User>();
 
-        using (var connection = CreateConnection()) // Usar el método de crear conexión
+        using (var connection = CreateConnection())
         {
             await connection.OpenAsync();
 
             string query = @"
-                SELECT u.id, u.dni, u.username, u.password, r.name AS role,u.NOMBRE as NOMBRE
+                SELECT u.id, u.dni, u.username, u.password, r.name AS role, u.NOMBRE AS NOMBRE
                 FROM users u
                 LEFT JOIN roles r ON u.role_id = r.id";
 
@@ -55,22 +56,16 @@ public class UserRepository
         return users;
     }
 
-
-
-
-
-
-
+    // Método para obtener todos los roles
     public async Task<IEnumerable<Role>> GetAllRolAsync()
     {
-        var Roles = new List<Role>();
+        var roles = new List<Role>();
 
-        using (var connection = CreateConnection()) // Usar el método de crear conexión
+        using (var connection = CreateConnection())
         {
             await connection.OpenAsync();
 
-            string query = @"
-                SELECT * FROM roles";
+            string query = @"SELECT * FROM roles";
 
             using (var command = new MySqlCommand(query, connection))
             {
@@ -78,17 +73,42 @@ public class UserRepository
                 {
                     while (await reader.ReadAsync())
                     {
-                        Roles.Add(new Role
+                        roles.Add(new Role
                         {
                             id = reader.GetInt32("id"),
                             name = reader.GetString("name")
-                         
                         });
                     }
                 }
             }
         }
 
-        return Roles;
+        return roles;
+    }
+
+    // Método para actualizar un usuario en la base de datos
+    public async Task<bool> UpdateUserAsync(User user)
+    {
+        using (var connection = CreateConnection())
+        {
+            await connection.OpenAsync();
+
+            string query = @"
+                UPDATE users 
+                SET username = @username, password = @password, role_id = @role_id, NOMBRE = @NOMBRE
+                WHERE id = @id";
+
+            using (var command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@username", user.username);
+                command.Parameters.AddWithValue("@password", user.password); // Asegúrate de encriptar la contraseña
+                command.Parameters.AddWithValue("@role_id", user.role);
+                command.Parameters.AddWithValue("@NOMBRE", user.NOMBRE);
+                command.Parameters.AddWithValue("@id", user.id);
+
+                int affectedRows = await command.ExecuteNonQueryAsync();
+                return affectedRows > 0; // Si se afectaron filas, significa que se actualizó correctamente
+            }
+        }
     }
 }

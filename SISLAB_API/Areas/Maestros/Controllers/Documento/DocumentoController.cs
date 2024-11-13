@@ -157,7 +157,7 @@ namespace SISLAB_API.Areas.Maestros.Controllers // Cambia esto al espacio de nom
             // Sanitiza el path si es necesario
             string sanitizedPath = HttpUtility.UrlDecode(path);
 
-            string filePath = Path.Combine(@"\\192.168.154.12\fileserver\TI\Velasquez\empleado", sanitizedPath);
+            string filePath = Path.Combine(@"\\PANDAFILE\Intranet\empleado", sanitizedPath);
 
             if (!System.IO.File.Exists(filePath))
             {
@@ -264,7 +264,7 @@ namespace SISLAB_API.Areas.Maestros.Controllers // Cambia esto al espacio de nom
             string sanitizedPath = HttpUtility.UrlDecode(path);
 
             // Construir la ruta completa del archivo
-            string filePath = Path.Combine(@"\\192.168.154.12\fileserver\TI\Velasquez\firmas", sanitizedPath, sanitizedPath + "-firma.jpg");
+            string filePath = Path.Combine(@"\\PANDAFILE\Intranet\firmas", sanitizedPath, sanitizedPath + "-firma.jpg");
 
             // Verificar si el archivo existe
             if (!System.IO.File.Exists(filePath))

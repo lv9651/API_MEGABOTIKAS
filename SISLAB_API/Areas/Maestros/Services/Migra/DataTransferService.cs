@@ -9,7 +9,7 @@ public class DataTransferService
 
     public DataTransferService(IConfiguration configuration)
     {
-        _sqlServerConnectionString = configuration.GetConnectionString("SqlServersige");
+        _sqlServerConnectionString = configuration.GetConnectionString("SqlServerConnection");
         _mysqlConnectionString = configuration.GetConnectionString("SislabConnection");
     }
 
@@ -21,11 +21,7 @@ public class DataTransferService
             {
                 await sqlConnection.OpenAsync();
 
-                var sqlQuery = "SELECT documento as dni, userName, clave, nombres " +
-                "FROM (SELECT documento, userName, clave, CONCAT(nombres, ' ', ape_paterno) as nombres, " +
-                "ROW_NUMBER() OVER (PARTITION BY documento ORDER BY documento) AS ord " +
-                "FROM principal.empleado WHERE estado = 'HABILITADO') d " +
-                "WHERE ord = 1 AND userName NOT IN ('', 'PRUEBA')";
+                var sqlQuery = "SELECT DOCIDEN as dni, DOCIDEN as username , DOCIDEN as password,\r\nCONCAT(NOMBRE,' ',APEPAT,' ',APEMAT)NOMBRE,1 as role_id\r\n from TrabajadorIntranet \r\n where SITUACIÓN=1\r\n union all\r\nSELECT DOCIDEN as dni, DOCIDEN as username , DOCIDEN as password,\r\nCONCAT(NOMBRE,' ',APEPAT,' ',APEMAT)NOMBRE,1 as role_id\r\nfrom PLMEDSOL.DBO.TrabajadorIntranet  where SITUACIÓN=1  union all\r\nSELECT DOCIDEN as dni, DOCIDEN as username , DOCIDEN as password,\r\nCONCAT(NOMBRE,' ',APEPAT,' ',APEMAT)NOMBRE ,1 as role_id from PLQUIMSA.DBO.TrabajadorIntranet \r\n where SITUACIÓN=1";
 
                 using (var command = new SqlCommand(sqlQuery, sqlConnection))
                 using (var reader = await command.ExecuteReaderAsync())

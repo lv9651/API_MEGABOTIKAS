@@ -128,7 +128,7 @@ public class DocumentRepository
         // Elimina el video del sistema de archivos
         if (!string.IsNullOrEmpty(ruta_doc))
         {
-            var videoPath = Path.Combine(@"\\192.168.154.12\fileserver\TI\Velasquez\empleado", dni, beneficio, ruta_doc);
+            var videoPath = Path.Combine(@"\\PANDAFILE\Intranet\empleado", dni, beneficio, ruta_doc);
             if (File.Exists(videoPath))
             {
                 File.Delete(videoPath);

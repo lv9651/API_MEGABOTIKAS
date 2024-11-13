@@ -86,7 +86,7 @@ public class NoticiaRepository
         // Elimina la imagen del sistema de archivos
         if (!string.IsNullOrEmpty(imageUrl))
         {
-            var imagePath = Path.Combine(@"\\192.168.154.12\fileserver\TI\Velasquez\Img", imageUrl);
+            var imagePath = Path.Combine(@"\\PANDAFILE\Intranet\Img", imageUrl);
             if (File.Exists(imagePath))
             {
                 File.Delete(imagePath);

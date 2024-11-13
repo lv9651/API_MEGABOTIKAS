@@ -60,7 +60,7 @@ namespace SISLAB_API.Areas.Maestros.Controllers
                 {
                     // Generar un nombre único o ruta para guardar el video
                     string uniqueFileName = $"{Guid.NewGuid()}_{video.Key}";
-                    string videoUrl = Path.Combine(@"\\192.168.154.12\fileserver\TI\Velasquez\Videos", uniqueFileName);
+                    string videoUrl = Path.Combine(@"\\PANDAFILE\Intranet\Videos", uniqueFileName);
 
                     using (var fileStream = new FileStream(videoUrl, FileMode.Create))
                     {
@@ -101,7 +101,7 @@ namespace SISLAB_API.Areas.Maestros.Controllers
         {
             // Generar el nombre del archivo usando el ID con extensión .mp4
             string videoFileName = $"{id}"; // Cambia la extensión a mp4
-            string videoPath = Path.Combine(@"\\192.168.154.12\fileserver\TI\Velasquez\Videos", videoFileName);
+            string videoPath = Path.Combine(@"\\PANDAFILE\Intranet\Videos", videoFileName);
 
             if (!System.IO.File.Exists(videoPath))
             {
