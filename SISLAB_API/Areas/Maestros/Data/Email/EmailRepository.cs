@@ -11,7 +11,8 @@ public class EmailRepository
     private readonly string _fromEmail = "lvelasquez@qf.com.pe"; // Tu correo
     private readonly string _fromPassword = "Luis@2023$";
 
-    public async Task SendEmailAsync(string toEmail, string subject, string body, IFormFile file)
+   /* public async Task SendEmailAsync(string toEmail, string subject, string body, IFormFile file)*/
+          public async Task SendEmailAsync(string toEmail, string subject, string body)
     {
         using (var client = new SmtpClient(_smtpServer, _smtpPort))
         {
@@ -27,7 +28,7 @@ public class EmailRepository
                 mailMessage.To.Add(toEmail);
 
                 // Si hay un archivo, se agrega como adjunto
-                if (file != null && file.Length > 0)
+             /*   if (file != null && file.Length > 0)
                 {
                     var fileName = Path.GetFileName(file.FileName);
                     using (var stream = new MemoryStream())
@@ -35,7 +36,7 @@ public class EmailRepository
                         await file.CopyToAsync(stream);
                         mailMessage.Attachments.Add(new Attachment(new MemoryStream(stream.ToArray()), fileName));
                     }
-                }
+                }*/
 
                 await client.SendMailAsync(mailMessage);
             }

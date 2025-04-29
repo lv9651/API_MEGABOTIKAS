@@ -32,6 +32,7 @@ namespace SISLAB_API.Areas.Maestros.Controllers
         public async Task<IActionResult> UploadNews(
             [FromForm] string title,
             [FromForm] string content,
+            [FromForm] string bloque,
             ICollection<IFormFile> images)
         {
             if (images == null || images.Count == 0)
@@ -70,7 +71,9 @@ namespace SISLAB_API.Areas.Maestros.Controllers
                     {
                         Title = title,
                         content = content,
-                        image_url = uniqueFileName // Asigna el nombre del archivo
+                        image_url = uniqueFileName,
+                         bloque = bloque
+
                     });
                 }
 
@@ -134,11 +137,26 @@ namespace SISLAB_API.Areas.Maestros.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Error al eliminar la noticia: {ex.Message}");
             }
         }
+    
 
+    [HttpPut("act")]
+        public async Task<IActionResult> UpdateNoticia( [FromBody] NoticiasAct noticia)
+        {
+            
+
+            var updatedNoticia = await _noticiaService.ActualizarNoticiaAsync( noticia);
+          
+
+            return Ok(new { message = "Noticia actualizada correctamente", data = updatedNoticia });
+        }
 
 
     }
+
 }
+
+
+
 
 
 

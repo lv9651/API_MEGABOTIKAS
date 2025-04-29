@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Microsoft.Data.SqlClient;
 using MySql.Data.MySqlClient;
 using SISLAB_API.Areas.Maestros.Models;
 using System.Collections.Generic;
@@ -280,9 +281,33 @@ public class InductionRepository
 
 
 
+    public async Task AddVideoProgressAsync(string userId, int videoId)
+    {
+        using (var connection = new MySqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
 
+            var command = new MySqlCommand("INSERT INTO user_video_progress (user_id, video_id, watched) VALUES (@userId, @videoId, @watched)", connection);
+            command.Parameters.AddWithValue("@userId", userId);
+            command.Parameters.AddWithValue("@videoId", videoId);
+            command.Parameters.AddWithValue("@watched", true);
 
+            await command.ExecuteNonQueryAsync();
+        }
+    }
 
+    public async Task<string> GetVideoTitleByIdAsync(int videoId)
+    {
+        using (var connection = new MySqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+            var command = new MySqlCommand("SELECT title FROM induction_videos WHERE id = @videoId", connection);
+            command.Parameters.AddWithValue("@videoId", videoId);
+
+            var result = await command.ExecuteScalarAsync();
+            return result?.ToString();
+        }
+    }
 
 
     public async Task<IEnumerable<VideoProgress>> GetVideoProgressAsync(string userId, string module)
@@ -299,7 +324,7 @@ public class InductionRepository
                 {
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("userId", userId);
-                    command.Parameters.AddWithValue("module", module);
+                    command.Parameters.AddWithValue("module", module);  
 
                     using (var reader = await command.ExecuteReaderAsync())
                     {

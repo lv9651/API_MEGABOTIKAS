@@ -1,6 +1,10 @@
 ﻿
 using SISLAB_API.Areas.Maestros.Models;
 
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using SISLAB_API.Areas.Maestros.Models;
+
 
 namespace SISLAB_API.Areas.Maestros.Services
 {
@@ -73,10 +77,30 @@ namespace SISLAB_API.Areas.Maestros.Services
         }
 
 
+        public async Task AddVideoProgressAsync(string userId, VideoProgressRequest request)
+        {
+            // Get the video title
+            var videoTitle = await _InductionRepository.GetVideoTitleByIdAsync(request.VideoId);
+
+            if (string.IsNullOrEmpty(videoTitle))
+            {
+                throw new Exception("Video no encontrado");
+            }
+
+            // Add the video progress
+            await _InductionRepository.AddVideoProgressAsync(userId, request.VideoId);
+
+            // Add a notification
+           
+        }
+
+
+
 
 
 
     }
+
 }
 
 

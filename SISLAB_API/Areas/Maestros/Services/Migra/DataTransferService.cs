@@ -21,7 +21,7 @@ public class DataTransferService
             {
                 await sqlConnection.OpenAsync();
 
-                var sqlQuery = "SELECT DOCIDEN as dni, DOCIDEN as username , DOCIDEN as password,\r\nCONCAT(NOMBRE,' ',APEPAT,' ',APEMAT)NOMBRE,1 as role_id\r\n from TrabajadorIntranet \r\n where SITUACIÓN=1\r\n union all\r\nSELECT DOCIDEN as dni, DOCIDEN as username , DOCIDEN as password,\r\nCONCAT(NOMBRE,' ',APEPAT,' ',APEMAT)NOMBRE,1 as role_id\r\nfrom PLMEDSOL.DBO.TrabajadorIntranet  where SITUACIÓN=1  union all\r\nSELECT DOCIDEN as dni, DOCIDEN as username , DOCIDEN as password,\r\nCONCAT(NOMBRE,' ',APEPAT,' ',APEMAT)NOMBRE ,1 as role_id from PLQUIMSA.DBO.TrabajadorIntranet \r\n where SITUACIÓN=1";
+                var sqlQuery = "SELECT DOCIDEN as dni, DOCIDEN as username , DOCIDEN as password,\r\nCONCAT(NOMBRE,' ',APEPAT,' ',APEMAT)NOMBRE,1 as role_id,EMAIL\r\n from TrabajadorIntranet \r\n where SITUACIÓN=1\r\n union all\r\nSELECT DOCIDEN as dni, DOCIDEN as username , DOCIDEN as password,\r\nCONCAT(NOMBRE,' ',APEPAT,' ',APEMAT)NOMBRE,1 as role_id,EMAIL\r\nfrom PLMEDSOL.DBO.TrabajadorIntranet  where SITUACIÓN=1  union all\r\nSELECT DOCIDEN as dni, DOCIDEN as username , DOCIDEN as password,\r\nCONCAT(NOMBRE,' ',APEPAT,' ',APEMAT)NOMBRE ,1 as role_id,EMAIL from PLQUIMSA.DBO.TrabajadorIntranet \r\n where SITUACIÓN=1";
 
                 using (var command = new SqlCommand(sqlQuery, sqlConnection))
                 using (var reader = await command.ExecuteReaderAsync())
@@ -38,15 +38,17 @@ public class DataTransferService
                                 Username = reader.GetString(1),
                                 clave = reader.GetString(2),
                                 nombres = reader.GetString(3),
+                                correo = reader.GetString(5),
                             };
 
-                            var insertQuery = "INSERT INTO users (dni, username, password,role_id,NOMBRE) VALUES (@dni, @Username, @clave,1,@nombres)";
+                            var insertQuery = "INSERT INTO users (correo,dni, username, password,role_id,NOMBRE) VALUES (@correo,@dni, @Username, @clave,1,@nombres)";
                             using (var insertCommand = new MySqlCommand(insertQuery, mysqlConnection))
                             {
                                 insertCommand.Parameters.AddWithValue("@dni", usuario.dni);
                                 insertCommand.Parameters.AddWithValue("@Username", usuario.Username);
                                 insertCommand.Parameters.AddWithValue("@clave", usuario.clave);
                                 insertCommand.Parameters.AddWithValue("@nombres", usuario.nombres);
+                                insertCommand.Parameters.AddWithValue("@correo", usuario.correo);
 
                                 await insertCommand.ExecuteNonQueryAsync();
                             }

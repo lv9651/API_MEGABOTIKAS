@@ -8,6 +8,18 @@
 
         public string image_url { get; set; }
 
+        public string bloque { get; set; }
 
+
+    }
+
+
+
+    public class NoticiasAct
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Content { get; set; }
+        public string Bloque { get; set; }
     }
 }

@@ -1,5 +1,10 @@
 using SISLAB_API.Areas.Maestros.Services;
 
+using VideoReportApi.Repositories;
+using VideoReportApi.Services;
+
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Obtener la ruta compartida de la configuración
@@ -10,11 +15,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configuración de CORS
+// Configuración de CORShttps://intranet.qf.com.pe
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        builder => builder.WithOrigins("http://localhost:3001")
+        builder => builder.WithOrigins("https://intranet.qf.com.pe")
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials());
@@ -30,9 +35,12 @@ builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<AgendaRepository>();
 builder.Services.AddScoped<EmailRepository>();
 builder.Services.AddScoped<NotificationRepository>();
+builder.Services.AddScoped<VideoReportRepository>();
+builder.Services.AddScoped<BloqueAnuncioRepository>();
 
 
 // Servicios
+builder.Services.AddScoped<BloqueAnuncioService>();
 builder.Services.AddScoped<EmpleadoService>();
 builder.Services.AddScoped<LoginService>();
 builder.Services.AddScoped<NoticiaService>();
@@ -42,10 +50,17 @@ builder.Services.AddScoped<DataTransferService>();
 builder.Services.AddScoped<AgendaService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<VideoReportService>();
+
+
 // Registrar DocumentoService con la ruta compartida
 builder.Services.AddScoped<DocumentoService>(provider =>
     new DocumentoService(
         provider.GetRequiredService<DocumentRepository>(),
+         provider.GetRequiredService<UserService>(),  // Inyectar UserService
+        provider.GetRequiredService<EmailService>(),
+
+
         sharedPath)); // Pasar la ruta compartida
 
 var app = builder.Build();

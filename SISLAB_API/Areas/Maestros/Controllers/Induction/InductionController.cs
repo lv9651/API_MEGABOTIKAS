@@ -226,10 +226,26 @@ namespace SISLAB_API.Areas.Maestros.Controllers
 
 
 
+        [HttpPost("{id}/video-progress")]
+        public async Task<IActionResult> AddVideoProgress(string userId, [FromBody] VideoProgressRequest request)
+        {
+            try
+            {
+                await _inductionservice.AddVideoProgressAsync(userId, request);
+                return Ok(new { message = "Progreso del video y notificación añadidos exitosamente" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Error: {ex.Message}" });
+            }
+        }
 
 
 
-        /*    [HttpPost("{id}/video-progress")]
+
+
+        /*
+          [HttpPost("{id}/video-progress")]
             public async Task<IActionResult> AddVideoProgress(string userId, [FromBody] VideoProgressRequest request)
             {
                 string videoTitle = string.Empty;

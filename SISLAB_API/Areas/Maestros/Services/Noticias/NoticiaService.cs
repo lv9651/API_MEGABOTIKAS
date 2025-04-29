@@ -41,6 +41,14 @@ namespace SISLAB_API.Areas.Maestros.Services
 
 
 
+        public async Task<NoticiasAct> ActualizarNoticiaAsync(NoticiasAct noticia)
+        {
+            // Llamamos directamente al repositorio para realizar la actualización
+            var updated = await _NoticiaRepository.UpdateNoticiaAsync(noticia);
+
+            return updated ? noticia : null; // Si la actualización tuvo éxito, retornamos la noticia
+        }
+
 
     }
 }

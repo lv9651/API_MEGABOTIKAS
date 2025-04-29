@@ -3,6 +3,7 @@ using MySql.Data.MySqlClient;
 using SISLAB_API.Areas.Maestros.Models;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Threading.Tasks;
 
 public class NoticiaRepository
@@ -30,7 +31,8 @@ public class NoticiaRepository
             {
                 title = noticia.Title,
                 content = noticia.content,
-                image_url = noticia.image_url
+                image_url = noticia.image_url,
+                bloque = noticia.bloque
             }, commandType: CommandType.StoredProcedure);
         }
 
@@ -55,7 +57,19 @@ public class NoticiaRepository
         }
     }
 
-
+    public async Task<bool> UpdateNoticiaAsync(NoticiasAct noticia)
+    {
+        var query = @"
+            UPDATE news 
+            SET Title = @Title, Content = @Content, Bloque = @Bloque
+            WHERE Id = @Id"
+        ;
+        using (var connection = CreateConnection())
+        {
+            var result = await connection.ExecuteAsync(query, noticia);
+        return result > 0; // Retorna true si la actualización fue exitosa
+        }
+    }
 
 
 

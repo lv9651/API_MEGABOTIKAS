@@ -143,12 +143,55 @@ namespace SISLAB_API.Areas.Maestros.Controllers // Cambia esto al espacio de nom
         }
 
 
+
+        [HttpGet("Vista_documento/{ide}")]
+        public async Task<IActionResult> Vista_documento(int ide)
+        {
+            var documento = await _documentService.Vista_documentoByIdAsync(ide); // Método modificado
+            if (documento == null)
+            {
+                return NotFound(new { message = "Documento no encontrado." });
+            }
+            return Ok(documento); // 200 + JSON
+        }
+
+
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BeneficioEmp>>> GetBenefemple()
         {
             var noticias = await _documentService.GetBenefemple();
             return Ok(noticias);
         }
+
+
+        [HttpPost("replace-file")]
+        public async Task<IActionResult> ReplaceFileAsync(
+        [FromForm] string dni,
+        [FromForm] string beneficio,
+        [FromForm] string rutaDoc,
+        [FromForm] IFormFile newFile,
+        [FromForm] int documentId)
+        {
+            if (newFile == null || newFile.Length == 0)
+            {
+                return BadRequest("No se ha proporcionado un archivo.");
+            }
+
+            try
+            {
+                // Llamar al servicio para guardar y reemplazar el archivo
+                await _documentService.SaveAndReplaceFileAsync(dni, beneficio, rutaDoc, newFile, documentId);
+
+                return Ok("El archivo ha sido reemplazado y la base de datos actualizada.");
+            }
+            catch (Exception ex)
+            {
+                // Manejar cualquier excepción
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al reemplazar el archivo: {ex.Message}");
+            }
+        }
+
 
 
         [HttpGet("Benef")]
@@ -253,6 +296,53 @@ namespace SISLAB_API.Areas.Maestros.Controllers // Cambia esto al espacio de nom
             }
         }
 
+        [HttpGet("GetDocument/{documentName}")]
+        public IActionResult GetDocument(string documentName)
+        {
+            // Mapear los nombres de documentos a los archivos reales
+            var documents = new Dictionary<string, string>
+    {
+        { "documento1", "P-RH-006 - PRESTAMOS DE PERSONAL QF.pdf" },
+        { "documento2", "R-RH-007 - FORMATO LICENCIA CON GOCE.pdf" },
+        { "documento3", "SOLICITUD DE AUSENCIA DE LABORES.pdf" }
+    };
+
+            // Validar si el documento solicitado existe
+            if (!documents.ContainsKey(documentName))
+            {
+                return NotFound("Documento no encontrado.");
+            }
+
+            // Ruta del archivo real en el servidor
+            string filePath = Path.Combine(@"\\PANDAFILE\Intranet\Formato\", documents[documentName]);
+
+            // Verificar si el archivo existe
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound("Archivo no encontrado.");
+            }
+
+            try
+            {
+                // Abrir el archivo como un FileStream
+                var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+
+                // Obtener el tipo de contenido dependiendo de la extensión del archivo
+                string contentType = "application/pdf"; // Si el archivo es PDF
+
+                // Nombre del archivo para la descarga
+                string fileName = Path.GetFileName(filePath);
+
+                // Añadir encabezado para la descarga del archivo
+                Response.Headers.Add("Content-Disposition", $"attachment; filename=\"{fileName}\"");
+
+                return File(fileStream, contentType);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al abrir el archivo: {ex.Message}");
+            }
+        }
 
 
 

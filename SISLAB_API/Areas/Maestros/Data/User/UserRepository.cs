@@ -86,6 +86,40 @@ public class UserRepository
         return roles;
     }
 
+
+
+
+
+
+
+
+    public async Task<string> GetEmailByDniAsync(string dni)
+    {
+        using (var connection = CreateConnection())
+        {
+            await connection.OpenAsync();
+
+            string query = "SELECT correo FROM users WHERE dni = @dni LIMIT 1";
+
+            using (var command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@dni", dni);
+
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    if (await reader.ReadAsync())
+                    {
+                        return reader.GetString("correo");
+                    }
+                    else
+                    {
+                        return null; // No se encontró un correo para el DNI
+                    }
+                }
+            }
+        }
+    }
+
     // Método para actualizar un usuario en la base de datos
     public async Task<bool> UpdateUserAsync(User user)
     {
@@ -95,7 +129,8 @@ public class UserRepository
 
             string query = @"
                 UPDATE users 
-                SET username = @username, password = @password, role_id = @role_id, NOMBRE = @NOMBRE
+                SET username = @username, password = @password, role_id = @role_id, NOMBRE = @NOMBRE,
+     updated_at = NOW()
                 WHERE id = @id";
 
             using (var command = new MySqlCommand(query, connection))

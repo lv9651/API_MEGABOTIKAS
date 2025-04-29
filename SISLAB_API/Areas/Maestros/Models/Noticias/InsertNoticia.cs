@@ -7,9 +7,10 @@
         public string content { get; set; }
 
         public string image_url { get; set; }
+        public string bloque { get; set; }
 
-     
- 
+
+
 
     }
 }

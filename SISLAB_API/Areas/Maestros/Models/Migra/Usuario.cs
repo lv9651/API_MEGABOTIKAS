@@ -6,4 +6,6 @@
     public int role_id { get; set; }
     public string nombres { get; set; }
 
+    public string correo { get; set; }
+
 }

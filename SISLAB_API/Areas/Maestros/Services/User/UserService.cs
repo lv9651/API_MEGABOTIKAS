@@ -24,6 +24,19 @@ public class UserService
         return await _userRepository.GetAllRolAsync();
     }
 
+    public async Task<string> GetEmailByDni(string dni)
+    {
+        // Aquí llamamos a GetEmailByDniAsync que devuelve un string (el correo)
+        var email = await _userRepository.GetEmailByDniAsync(dni);
+
+        if (string.IsNullOrEmpty(email))
+        {
+            throw new InvalidOperationException($"No se encontró un correo para el DNI {dni}.");
+        }
+
+        return email;
+    }
+
     // Método para actualizar un usuario
     public async Task<bool> UpdateUserAsync(User user)
     {

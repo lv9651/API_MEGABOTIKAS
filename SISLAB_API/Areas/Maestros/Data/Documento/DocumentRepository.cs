@@ -3,6 +3,7 @@ using MySql.Data.MySqlClient;
 using SISLAB_API.Areas.Maestros.Models;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -62,13 +63,83 @@ public class DocumentRepository
             }
         }
     }
+    public async Task<bool> UpdateDocumentRouteAsync(int id, string rutaDoc)
+    {
+        string procedureName = "Firma_documento"; // Asegúrate de que este nombre sea correcto
+
+        // Usar MySqlConnection para abrir la conexión
+        using (var connection = new MySqlConnection(_connectionString))
+        {
+            try
+            {
+                // Abrir la conexión
+                await connection.OpenAsync();
+
+                // Crear un comando para ejecutar el procedimiento almacenado
+                using (var command = new MySqlCommand(procedureName, connection))
+                {
+                    // Establecer que el comando es un procedimiento almacenado
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    // Agregar los parámetros requeridos
+                    command.Parameters.AddWithValue("@ide", id);
+                    command.Parameters.AddWithValue("@ruta_docc", rutaDoc);
+
+                    // Ejecutar el procedimiento y obtener el número de filas afectadas
+                    var rowsAffected = await command.ExecuteNonQueryAsync();
+
+                    // Retornar true si se actualizó al menos una fila
+                    return rowsAffected > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejar excepciones (por ejemplo, problemas de conexión, procedimientos no encontrados)
+                Console.WriteLine($"Error al ejecutar el procedimiento: {ex.Message}");
+                return false;
+            }
+        }
+    }
 
 
 
+    public async Task<bool> Vista_documentoByIdAsync(int id)
+    {
+        string procedureName = "Vista_documento"; // Asegúrate de que este nombre sea correcto
 
+        // Usar MySqlConnection para abrir la conexión
+        using (var connection = new MySqlConnection(_connectionString))
+        {
+            try
+            {
+                // Abrir la conexión
+                await connection.OpenAsync();
 
+                // Crear un comando para ejecutar el procedimiento almacenado
+                using (var command = new MySqlCommand(procedureName, connection))
+                {
+                    // Establecer que el comando es un procedimiento almacenado
+                    command.CommandType = CommandType.StoredProcedure;
 
+                    // Agregar los parámetros requeridos
+                    command.Parameters.AddWithValue("@ide", id);
+                
 
+                    // Ejecutar el procedimiento y obtener el número de filas afectadas
+                    var rowsAffected = await command.ExecuteNonQueryAsync();
+
+                    // Retornar true si se actualizó al menos una fila
+                    return rowsAffected > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejar excepciones (por ejemplo, problemas de conexión, procedimientos no encontrados)
+                Console.WriteLine($"Error al ejecutar el procedimiento: {ex.Message}");
+                return false;
+            }
+        }
+    }
 
 
     public async Task InsertBenefAsync(string dni, string descripcion, string beneficio, string archivoUrl)
