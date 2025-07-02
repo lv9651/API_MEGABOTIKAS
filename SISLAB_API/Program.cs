@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.Features;
 using SISLAB_API.Areas.Maestros.Services;
 
 using VideoReportApi.Repositories;
@@ -7,6 +8,14 @@ using VideoReportApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Limits.MaxRequestBodySize = 3L * 1024 * 1024 * 1024; // 3 GB
+});
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 3L * 1024 * 1024 * 1024; // 3 GB
+});
 // Obtener la ruta compartida de la configuración
 var sharedPath = builder.Configuration["SharedPath"];
 
@@ -19,7 +28,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        builder => builder.WithOrigins("http://localhost:3001")
+        builder => builder.WithOrigins("https://intranet.qf.com.pe")
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials());

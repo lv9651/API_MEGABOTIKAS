@@ -27,54 +27,49 @@ namespace SISLAB_API.Areas.Maestros.Controllers
             return Ok(noticias);
         }
 
-
         [HttpPost("upload-videos")]
+        [RequestSizeLimit(3221225472)] // 3 GB
         public async Task<IActionResult> UploadVideos(
-               [FromForm] int id,
-    [FromForm] string title,
-    [FromForm] string content,
-    [FromForm] string module,
-    ICollection<IFormFile> videos)
+      [FromForm] int id,
+      [FromForm] string title,
+      [FromForm] string content,
+      [FromForm] string module,
+      [FromForm] ICollection<IFormFile> videos)
         {
             if (videos == null || videos.Count == 0)
-            {
                 return BadRequest("Se deben proporcionar videos.");
-            }
 
-            var fileStreams = new Dictionary<string, Stream>();
+            string carpetaDestino = @"\\PANDAFILE\Intranet\Videos";
 
-            foreach (var video in videos)
-            {
-                if (video.Length > 0)
-                {
-                    var stream = new MemoryStream();
-                    await video.CopyToAsync(stream);
-                    stream.Position = 0; // Reiniciar el stream para lectura posterior
-                    fileStreams.Add(video.FileName, stream);
-                }
-            }
+            // Verifica que exista la carpeta
+            if (!Directory.Exists(carpetaDestino))
+                return StatusCode(500, "Ruta de destino no existe o no está disponible.");
 
             try
             {
-                foreach (var video in fileStreams)
+                foreach (var video in videos)
                 {
-                    // Generar un nombre único o ruta para guardar el video
-                    string uniqueFileName = $"{Guid.NewGuid()}_{video.Key}";
-                    string videoUrl = Path.Combine(@"\\PANDAFILE\Intranet\Videos", uniqueFileName);
+                    if (video.Length == 0)
+                        continue;
 
-                    using (var fileStream = new FileStream(videoUrl, FileMode.Create))
+                    // Generar nombre único
+                    string uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(video.FileName)}";
+                    string rutaArchivo = Path.Combine(carpetaDestino, uniqueFileName);
+
+                    // Guardar directamente en disco sin usar MemoryStream
+                    using (var fileStream = new FileStream(rutaArchivo, FileMode.Create, FileAccess.Write))
                     {
-                        await video.Value.CopyToAsync(fileStream);
+                        await video.CopyToAsync(fileStream);  // // 80 KB buffer
                     }
 
-                    // Guarda la noticia, asignando la URL del video
+                    // Guardar info en base de datos
                     await _inductionservice.SaveInductionAsync(new Induction
                     {
                         id = id,
                         title = title,
                         content = content,
-                        video_url = uniqueFileName ,// Asigna el nombre del archivo (podrías cambiar esto a video_url si es necesario)
-                        module=module
+                        module = module,
+                        video_url = uniqueFileName
                     });
                 }
 
@@ -82,14 +77,9 @@ namespace SISLAB_API.Areas.Maestros.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al procesar los videos: {ex.Message}");
-            }
-            finally
-            {
-                foreach (var stream in fileStreams.Values)
-                {
-                    stream.Dispose();
-                }
+                Console.WriteLine($"[ERROR UploadVideos]: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, $"Error al procesar los videos: {ex.Message}");
             }
         }
 
@@ -99,8 +89,7 @@ namespace SISLAB_API.Areas.Maestros.Controllers
         [HttpGet("video/{id}")]
         public IActionResult GetVideoById(string id)
         {
-            // Generar el nombre del archivo usando el ID con extensión .mp4
-            string videoFileName = $"{id}"; // Cambia la extensión a mp4
+            string videoFileName = id; // ya tiene el nombre completo con extensión
             string videoPath = Path.Combine(@"\\PANDAFILE\Intranet\Videos", videoFileName);
 
             if (!System.IO.File.Exists(videoPath))
@@ -108,11 +97,10 @@ namespace SISLAB_API.Areas.Maestros.Controllers
                 return NotFound("Video no encontrado.");
             }
 
-            var fileStream = new FileStream(videoPath, FileMode.Open, FileAccess.Read);
-            return File(fileStream, "video/mp4"); // Cambia el tipo MIME a video/mp4
+            var fileStream = new FileStream(videoPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+            return File(fileStream, "video/mp4", enableRangeProcessing: true); // 👈 HABILITA STREAMING
         }
-
-
 
 
         [HttpDelete("{id}")]
