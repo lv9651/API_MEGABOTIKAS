@@ -33,6 +33,8 @@ builder.Services.AddCors(options =>
 // 🔹 Inyección de dependencias (sin interfaces)
 builder.Services.AddScoped<UsuarioRepositorio>();
 builder.Services.AddScoped<UsuarioServicio>();
+builder.Services.AddScoped<PuntajeRepositorio>();
+builder.Services.AddScoped<PuntajeServicio>();
 
 var app = builder.Build();
 
