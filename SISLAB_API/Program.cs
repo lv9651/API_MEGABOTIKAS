@@ -1,76 +1,38 @@
-using Microsoft.AspNetCore.Http.Features;
+﻿using Microsoft.AspNetCore.Http.Features;
 using SISLAB_API.Areas.Maestros.Services;
 
-using VideoReportApi.Repositories;
-using VideoReportApi.Services;
-
-
+using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configuración de Kestrel (límite de archivos 3GB)
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    serverOptions.Limits.MaxRequestBodySize = 3L * 1024 * 1024 * 1024; // 3 GB
+    serverOptions.Limits.MaxRequestBodySize = 3L * 1024 * 1024 * 1024;
 });
 builder.Services.Configure<FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = 3L * 1024 * 1024 * 1024; // 3 GB
+    options.MultipartBodyLengthLimit = 3L * 1024 * 1024 * 1024;
 });
-// Obtener la ruta compartida de la configuraci�n
-var sharedPath = builder.Configuration["SharedPath"];
 
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configuraci�n de CORShttps://intranet.qf.com.pe
+// Configuración de CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        builder => builder.WithOrigins("https://intranet.qf.com.pe")
-                          .AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .AllowCredentials());
+        policy => policy.WithOrigins("http://localhost:3001", "https://intranet.qf.com.pe")
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials());
 });
 
-// Repositorios
-builder.Services.AddScoped<EmpleadoRepository>();
-builder.Services.AddScoped<LoginRepository>();
-builder.Services.AddScoped<NoticiaRepository>();
-builder.Services.AddScoped<DocumentRepository>();
-builder.Services.AddScoped<InductionRepository>();
-builder.Services.AddScoped<UserRepository>();
-builder.Services.AddScoped<AgendaRepository>();
-builder.Services.AddScoped<EmailRepository>();
-builder.Services.AddScoped<NotificationRepository>();
-builder.Services.AddScoped<VideoReportRepository>();
-builder.Services.AddScoped<BloqueAnuncioRepository>();
-
-
-// Servicios
-builder.Services.AddScoped<BloqueAnuncioService>();
-builder.Services.AddScoped<EmpleadoService>();
-builder.Services.AddScoped<LoginService>();
-builder.Services.AddScoped<NoticiaService>();
-builder.Services.AddScoped<InductionService>();
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<DataTransferService>();
-builder.Services.AddScoped<AgendaService>();
-builder.Services.AddScoped<EmailService>();
-builder.Services.AddScoped<NotificationService>();
-builder.Services.AddScoped<VideoReportService>();
-
-
-// Registrar DocumentoService con la ruta compartida
-builder.Services.AddScoped<DocumentoService>(provider =>
-    new DocumentoService(
-        provider.GetRequiredService<DocumentRepository>(),
-         provider.GetRequiredService<UserService>(),  // Inyectar UserService
-        provider.GetRequiredService<EmailService>(),
-
-
-        sharedPath)); // Pasar la ruta compartida
+// 🔹 Inyección de dependencias (sin interfaces)
+builder.Services.AddScoped<UsuarioRepositorio>();
+builder.Services.AddScoped<UsuarioServicio>();
 
 var app = builder.Build();
 
@@ -83,7 +45,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Aplicar la pol�tica CORS
+// Aplicar la política CORS (antes de Authorization)
 app.UseCors("AllowSpecificOrigin");
 
 app.UseAuthorization();
