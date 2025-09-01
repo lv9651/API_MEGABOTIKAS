@@ -8,6 +8,7 @@ using SISLAB_API.Areas.Maestros.Services;
 using System.Web;
 using MySql.Data.MySqlClient;
 using Microsoft.AspNetCore.Identity.Data;
+using System.Runtime.InteropServices.ObjectiveC;
 
 
 
@@ -20,80 +21,123 @@ namespace SISLAB_API.Areas.Maestros.Controllers // Cambia esto al espacio de nom
 public class  PuntajeController : ControllerBase
 {
         private readonly PuntajeServicio _servicio;
-
+        private readonly Object _Logger;
         public PuntajeController(PuntajeServicio servicio)
         {
             _servicio = servicio;
         }
 
-        [HttpGet("puntos/{idUsuario}")]
-        public async Task<ActionResult<IEnumerable<Puntaje>>> ObtenerVentasPuntos(int idUsuario)
+  
+
+        [HttpGet("obtenerProductos")]
+        public async Task<ActionResult<IEnumerable<PuntajeServicio>>> Get()
         {
-            var ventas = await _servicio.ObtenerVentasPuntosAsync(idUsuario);
-
-            if (ventas == null || !ventas.Any())
+            try
             {
-                return NotFound("No se encontraron ventas para el usuario especificado.");
+                var servicios = await _servicio.ObtenerTodosLosServicios();
+                return Ok(servicios);
             }
-
-            return Ok(ventas);
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor al obtener servicios" });
+            }
         }
 
 
-
-
-
-
-
-        [HttpPost]
-        [Route("insertar")]
-        public IActionResult InsertarHistorial([FromBody] HistorialDescuento historialDescuento)
+        [HttpGet("ventas-puntos/{idUsuario}")]
+        public async Task<IActionResult> GetVentasPuntos(int idUsuario)
         {
-            if (historialDescuento == null)
-            {
-                return BadRequest("Los datos del historial son inválidos.");
-            }
-
             try
             {
-                // Llamamos al servicio para insertar el historial
-                _servicio.InsertarHistorialDescuento(
-                    historialDescuento.IdCliente,
-                    historialDescuento.PuntosTotal,
-                    historialDescuento.PuntosAntesDescuento,
-                    historialDescuento.PuntosDescuento,
-                    historialDescuento.NivelAnterior,
-                    historialDescuento.DescuentoAplicado,
-                    historialDescuento.NivelFinal
-                );
-                return Ok("Historial de descuento insertado correctamente.");
+                var resultados = await _servicio.ObtenerVentasPuntos(idUsuario);
+                return Ok(resultados);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error interno: {ex.Message}");
+                return StatusCode(500, new { message = "Error interno del servidor", detail = ex.Message });
             }
         }
 
+        [HttpGet("productos-canjeables")]
+        public async Task<IActionResult> GetProductosCanjeables()
+        {
+            try
+            {
+                var resultados = await _servicio.ObtenerProductosCanjeables(null);
+                return Ok(resultados);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor", detail = ex.Message });
+            }
+        }
+
+        [HttpGet("productos-canjeables/{idUsuario}")]
+        public async Task<IActionResult> GetProductosCanjeables(int idUsuario)
+        {
+            try
+            {
+                var resultados = await _servicio.ObtenerProductosCanjeables(idUsuario);
+                return Ok(resultados);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor", detail = ex.Message });
+            }
+        }
+
+        [HttpPost("canjear-producto")]
+        public async Task<IActionResult> CanjearProducto([FromBody] CanjeRequest request)
+        {
+            try
+            {
+                if (request == null)
+                    return BadRequest(new { message = "Solicitud inválida" });
+
+                var resultado = await _servicio.CanjearProducto(request.IdUsuario, request.CodigoProducto, request.tipomovimiento);
+                return Ok(resultado);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor", detail = ex.Message });
+            }
+        }
+
+        [HttpGet("saldo-puntos/{idUsuario}")]
+        public async Task<IActionResult> GetSaldoPuntos(int idUsuario)
+        {
+            try
+            {
+                var saldo = await _servicio.ObtenerSaldoPuntosModel(idUsuario);
+                return Ok(saldo);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor", detail = ex.Message });
+            }
+        }
+
+        [HttpGet("historial-completo/{idUsuario}")]
+        public async Task<IActionResult> GetHistorialCompleto(int idUsuario)
+        {
+            try
+            {
+                var resultados = await _servicio.ObtenerHistorialCompleto(idUsuario);
+                return Ok(resultados);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor", detail = ex.Message });
+            }
+        }
+
+        
         // Endpoint para obtener el historial de descuentos de un cliente
-        [HttpGet]
-        [Route("cliente/{idCliente}")]
-        public IActionResult ObtenerHistorialPorCliente(int idCliente)
-        {
-            try
-            {
-                var historial = _servicio.ObtenerHistorialPorCliente(idCliente);
-                if (historial == null || !historial.Any())
-                {
-                    return NotFound("No se encontraron registros de descuentos para este cliente.");
-                }
-
-                return Ok(historial);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error interno: {ex.Message}");
-            }
-        }
+      
 
 
     }

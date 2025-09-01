@@ -49,11 +49,102 @@ namespace SISLAB_API.Areas.Maestros.Services
             return _PuntajeRepositorio.ObtenerHistorialPorCliente(idCliente);
         }
 
-
-
-        public async Task<IEnumerable<Puntaje>> ObtenerVentasPuntosAsync(int idUsuario)
+        public async Task<IEnumerable<ProductosPuntos>> ObtenerTodosLosServicios()
         {
-            return await _PuntajeRepositorio.ObtenerVentasPuntosAsync(idUsuario);
+            try
+            {
+                return await _PuntajeRepositorio.ObtenerTodosServicios();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("No se pudieron obtener los servicios. Por favor, intente nuevamente.", ex);
+            }
+        }
+
+        public async Task<List<AcumulacionPuntos>> ObtenerVentasPuntos(int idUsuario)
+        {
+            try
+            {
+                return await _PuntajeRepositorio.ObtenerVentasPuntos(idUsuario);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error en servicio al obtener ventas puntos: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<List<ProductoCanjeable>> ObtenerProductosCanjeables(int? idUsuario)
+        {
+            try
+            {
+                return await _PuntajeRepositorio.ObtenerProductosCanjeables(idUsuario);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error en servicio al obtener productos canjeables: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<ResultadoCanje> CanjearProducto(int idUsuario, int codigoProducto,string tipomovimiento)
+        {
+            try
+            {
+                // Validaciones adicionales del servicio
+                if (idUsuario <= 0)
+                    throw new ArgumentException("ID de usuario inválido");
+
+                if (codigoProducto <= 0)
+                    throw new ArgumentException("Código de producto inválido");
+
+                return await _PuntajeRepositorio.CanjearProducto(idUsuario, codigoProducto,tipomovimiento);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error en servicio al canjear producto: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<decimal> ObtenerSaldoPuntos(int idUsuario)
+        {
+            try
+            {
+                if (idUsuario <= 0)
+                    throw new ArgumentException("ID de usuario inválido");
+
+                return await _PuntajeRepositorio.ObtenerSaldoPuntos(idUsuario);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error en servicio al obtener saldo de puntos: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<List<HistorialCompleto>> ObtenerHistorialCompleto(int idUsuario)
+        {
+            try
+            {
+                if (idUsuario <= 0)
+                    throw new ArgumentException("ID de usuario inválido");
+
+                return await _PuntajeRepositorio.ObtenerHistorialCompleto(idUsuario);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error en servicio al obtener historial completo: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<SaldoPuntos> ObtenerSaldoPuntosModel(int idUsuario)
+        {
+            try
+            {
+                var saldo = await ObtenerSaldoPuntos(idUsuario);
+                return new SaldoPuntos { SaldoPunto = saldo };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error en servicio al obtener saldo de puntos: {ex.Message}", ex);
+            }
         }
     }
 }
