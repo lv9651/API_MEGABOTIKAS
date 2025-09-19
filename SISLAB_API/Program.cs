@@ -2,6 +2,7 @@
 using SISLAB_API.Areas.Maestros.Services;
 
 using Microsoft.Data.SqlClient;
+using SISLAB_API.Areas.Maestros.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,23 +25,30 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        policy => policy.WithOrigins("http://localhost:3001", "https://intranet.qf.com.pe")
+        policy => policy.WithOrigins("http://localhost:3001", "https://vinaliclub.vinali.pe")
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials());
 });
 
 // 🔹 Inyección de dependencias (sin interfaces)
-builder.Services.AddScoped<UsuarioRepositorio>();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<UsuarioServicio>();
+builder.Services.AddScoped<UsuarioRepositorio>();
+
+
+
 builder.Services.AddScoped<PuntajeRepositorio>();
 builder.Services.AddScoped<PuntajeServicio>();
-
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
 }

@@ -2,6 +2,7 @@
 using Microsoft.Data.SqlClient;
 using SISLAB_API.Areas.Maestros.Models;
 using System.Data;
+using System.Data.Common;
 using System.Threading.Tasks;
 
 public class UsuarioRepositorio
@@ -17,41 +18,75 @@ public class UsuarioRepositorio
     private IDbConnection Connection => new SqlConnection(_connectionString);
 
     // Registrar un usuario y devolver el Id generado
-    public async Task<int> RegistrarUsuario(UsuarioVinali usuario)
+    public async Task<SocialLoginResult> SocialLoginAsync(Usuario usuario)
     {
-        using var db = Connection;
+        var parameters = new DynamicParameters();
+        parameters.Add("@Nombre", usuario.Nombre);
+        parameters.Add("@ApellidoPaterno", usuario.ApellidoPaterno);
+        parameters.Add("@ApellidoMaterno", usuario.ApellidoMaterno);
+        parameters.Add("@Correo", usuario.Correo);
+        parameters.Add("@TipoDocumento", usuario.TipoDocumento);
+        parameters.Add("@NumeroDocumento", usuario.NumeroDocumento);
 
-        // 🔑 Hashear la contraseña en texto plano
-        string hash = BCrypt.Net.BCrypt.HashPassword(usuario.Contrasena);
-
-        return await db.ExecuteScalarAsync<int>(
-            "clubvinali.sp_RegistrarUsuario_clubvinali",
-            new
-            {
-                usuario.Nombre,
-                usuario.ApellidoPaterno,
-                usuario.ApellidoMaterno,
-                usuario.Correo,
-                usuario.TipoDocumento,
-                usuario.NumeroDocumento,
-                ContrasenaHash = hash  // 👈 Se guarda el hash en la BD
-            },
+        // Ejecutamos el SP y leemos la primera fila
+        var row = await Connection.QueryFirstOrDefaultAsync<dynamic>(
+            "[clubqf].[sp_SocialLogin]",
+            parameters,
             commandType: CommandType.StoredProcedure
-        ).ConfigureAwait(false);
+        );
+
+        // Si el SP devolvió columna "Mensaje", significa que hubo error/usuario existente
+        if (row != null && row.Mensaje != null)
+        {
+            return new SocialLoginResult { Mensaje = row.Mensaje, Usuario = null };
+        }
+
+        // Si devolvió datos del usuario
+        var usuarioResult = row != null ? new Usuario
+        {
+            IdUsuario = row.IdUsuario,
+            Nombre = row.Nombre,
+            ApellidoPaterno = row.ApellidoPaterno,
+            ApellidoMaterno = row.ApellidoMaterno,
+            Correo = row.Correo,
+            TipoDocumento = row.TipoDocumento,
+            NumeroDocumento = row.NumeroDocumento,
+            FechaRegistro = row.FechaRegistro
+        } : null;
+
+        return new SocialLoginResult { Mensaje = null, Usuario = usuarioResult };
     }
-    // Obtener usuario por correo
-    public async Task<UsuarioVinali?> ObtenerPorCorreo(string correo)
+
+    public async Task<bool> ExisteCorreoAsync(string correo)
     {
-        using var db = Connection;
-        return await db.QueryFirstOrDefaultAsync<UsuarioVinali>(
-            "clubvinali.sp_ObtenerUsuarioPorCorreo_vinali", // nombre correcto del SP
-            new { Correo = correo },
+        using var conn = new SqlConnection(_connectionString);
+        using var cmd = new SqlCommand("clubqf.sp_ValidarCorreo", conn);
+        cmd.CommandType = CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@Correo", correo);
+
+        await conn.OpenAsync();
+        var result = await cmd.ExecuteScalarAsync();
+        return (result != null && (bool)result);
+    }
+    // Llama al stored procedure sp_ObtenerUltimaCompraCliente
+    public async Task<CompraResult?> GetUltimaCompraPorDocumentoAsync(string nroDocumento)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("@nroDocumento", nroDocumento, DbType.String);
+
+        // Si tu procedure devuelve las columnas UltimaFechaCompra y MontoTotal
+        var result = await Connection.QueryFirstOrDefaultAsync<CompraResult>(
+            "[clubqf].[sp_ObtenerUltimaCompraCliente]", // ajusta schema/proc si corresponde
+            parameters,
             commandType: CommandType.StoredProcedure
-        ).ConfigureAwait(false);
+        );
+
+        return result;
     }
 
-    // Guardar código de recuperación
-    public async Task<int> GuardarCodigoRecuperacion(string correo, string codigo, DateTime expiracion)
+
+// Guardar código de recuperación
+public async Task<int> GuardarCodigoRecuperacion(string correo, string codigo, DateTime expiracion)
     {
         using var db = Connection;
         return await db.ExecuteAsync(

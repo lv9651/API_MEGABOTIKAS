@@ -16,20 +16,45 @@ namespace SISLAB_API.Areas.Maestros.Services
             _UsuarioRepository = UsuarioRepository;
         }
 
-
-
-        public async Task RegistrarUsuario(UsuarioVinali usuario)
+        public async Task<SocialLoginResult> SocialLoginAsync(Usuario usuario)
         {
-            // Aquí deberías encriptar la contraseña antes de guardarla
-            usuario.ContrasenaHash = BCrypt.Net.BCrypt.HashPassword(usuario.ContrasenaHash);
-            await _UsuarioRepository.RegistrarUsuario(usuario);
+            return await _UsuarioRepository.SocialLoginAsync(usuario);
+        }
+        public async Task<bool> ValidarCorreoAsync(string correo)
+        {
+            return await _UsuarioRepository.ExisteCorreoAsync(correo);
         }
 
-        public async Task<UsuarioVinali?> ObtenerPorCorreo(string correo)
+        public async Task<PurchaseValidationResultDto> ValidateLastPurchaseAsync(PurchaseValidationDto dto)
         {
-            return await _UsuarioRepository.ObtenerPorCorreo(correo);
-        }
+            var dbCompra = await _UsuarioRepository.GetUltimaCompraPorDocumentoAsync(dto.NumeroDocumento);
 
+            if (dbCompra == null || dbCompra.UltimaFechaCompra == null)
+            {
+                return new PurchaseValidationResultDto
+                {
+                    IsValid = false,
+                    DbUltimaFechaCompra = null,
+                    DbMontoTotal = null,
+                    Message = "No se encontró historial de compras para este documento."
+                };
+            }
+
+            // Comparar solo la parte DATE (sin hora)
+            var dbDate = dbCompra.UltimaFechaCompra.Value.Date;
+            var userDate = dto.UltimaFechaCompra.Date;
+
+            bool fechaOk = dbDate == userDate;
+            bool montoOk = dbCompra.MontoTotal.HasValue && dbCompra.MontoTotal.Value == dto.UltimoMontoCompra;
+
+            return new PurchaseValidationResultDto
+            {
+                IsValid = fechaOk && montoOk,
+                DbUltimaFechaCompra = dbDate,
+                DbMontoTotal = dbCompra.MontoTotal,
+                Message = (fechaOk && montoOk) ? "Validación exitosa." : "Los datos no coinciden."
+            };
+        }
         public async Task GuardarCodigoRecuperacion(string correo, string codigo)
         {
             await _UsuarioRepository.GuardarCodigoRecuperacion(correo, codigo, DateTime.Now.AddMinutes(15));

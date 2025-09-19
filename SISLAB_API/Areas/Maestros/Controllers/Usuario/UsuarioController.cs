@@ -1,94 +1,87 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Mvc;
 using SISLAB_API.Areas.Maestros.Models;
 using SISLAB_API.Areas.Maestros.Services;
-using System.Web;
-using MySql.Data.MySqlClient;
-using Microsoft.AspNetCore.Identity.Data;
 
-
-
-
-namespace SISLAB_API.Areas.Maestros.Controllers // Cambia esto al espacio de nombres real
+namespace SISLAB_API.Areas.Maestros.Controllers
 {
-
+    [ApiController]
     [Route("api/[controller]")]
-[ApiController]
-public class UsuarioController : ControllerBase
-{
+    public class UsuarioController : ControllerBase
+    {
         private readonly UsuarioServicio _servicio;
+        private readonly EmailService _emailService;
 
-        public UsuarioController(UsuarioServicio servicio)
+        public UsuarioController(UsuarioServicio servicio, EmailService emailService)
         {
-            _servicio = servicio;
+            _servicio = servicio ?? throw new ArgumentNullException(nameof(servicio));
+            _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
         }
 
-        [HttpPost("registrar")]
-        public async Task<IActionResult> Registrar([FromBody] UsuarioVinali usuario)
+        [HttpPost("validar-compra")]
+        public async Task<IActionResult> ValidarCompra([FromBody] PurchaseValidationDto dto)
         {
+            if (string.IsNullOrWhiteSpace(dto.NumeroDocumento))
+                return BadRequest(new { message = "NumeroDocumento es obligatorio." });
+
+            if (string.IsNullOrWhiteSpace(dto.TipoDocumento))
+                return BadRequest(new { message = "TipoDocumento es obligatorio." });
+
+            var result = await _servicio.ValidateLastPurchaseAsync(dto);
+            if (result.IsValid)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
+        [HttpGet("validar-correo")]
+        public async Task<IActionResult> ValidarCorreo([FromQuery] string correo)
+        {
+            if (string.IsNullOrEmpty(correo))
+                return BadRequest(new { mensaje = "Correo inválido" });
+
+            bool existe = await _servicio.ValidarCorreoAsync(correo);
+
+            if (!existe)
+                return BadRequest(new { mensaje = "El correo no está registrado" });
+
+            return Ok(new { mensaje = "Correo válido", existe });
+        }
+        [HttpPost("social-login")]
+        public async Task<IActionResult> SocialLogin([FromBody] UsuarioDto dto)
+        {
+            if (dto == null)
+                return BadRequest(new { mensaje = "Datos inválidos" });
+
+            // Convertir DTO a modelo
+            var usuario = new Usuario
+            {
+                Nombre = dto.Nombre,
+                ApellidoPaterno = dto.ApellidoPaterno ?? "",
+                ApellidoMaterno = dto.ApellidoMaterno ?? "",
+                Correo = dto.Correo,
+                TipoDocumento = dto.TipoDocumento,
+                NumeroDocumento = dto.NumeroDocumento,
+                FechaRegistro = DateTime.Now
+            };
+
+            // Registrar o validar usuario
+            var result = await _servicio.SocialLoginAsync(usuario);
+
+            // Si hay mensaje de error, devolverlo sin enviar correo
+            if (result == null || !string.IsNullOrEmpty(result.Mensaje))
+                return BadRequest(new { mensaje = result?.Mensaje ?? "No se pudo realizar el login social." });
+
+            // ✅ Solo si todo salió bien, enviamos correo
             try
             {
-                await _servicio.RegistrarUsuario(usuario);
-                return Ok(new { mensaje = "Usuario registrado con éxito" });
+                await _emailService.SendConfirmationEmailAsync(usuario.Correo, usuario.Nombre);
             }
-            catch (Exception ex)
+            catch
             {
-                return BadRequest(new { error = ex.Message });
+                // Loggear el error, pero no interrumpir la respuesta
+                Console.WriteLine("No se pudo enviar el correo de confirmación.");
             }
-        }
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto request)
-        {
-            Console.WriteLine($"📥 Login recibido: Correo={request.Correo}, Contrasena={request.Contrasena}");
 
-            var usuario = await _servicio.ObtenerPorCorreo(request.Correo);
-            if (usuario == null)
-                return Unauthorized(new { error = "Usuario no encontrado" });
-
-            if (!_servicio.VerificarContrasena(request.Contrasena, usuario.ContrasenaHash))
-                return Unauthorized(new { error = "Contraseña incorrecta" });
-
-            return Ok(new
-            {
-                mensaje = "Login exitoso",
-                usuario = new
-                {
-                    usuario.IdUsuario,
-                    usuario.Nombre
-                }
-            });
-        }
-
-
-        [HttpPost("recuperar")]
-        public async Task<IActionResult> Recuperar([FromBody] RecuperarRequest data)
-        {
-            var usuario = await _servicio.ObtenerPorCorreo(data.Correo);
-            if (usuario == null) return NotFound(new { error = "Correo no registrado" });
-
-            string codigo = new Random().Next(100000, 999999).ToString();
-            await _servicio.GuardarCodigoRecuperacion(data.Correo, codigo);
-
-            // ✅ Enviar el código al correo del usuario
-            await _servicio.EnviarCorreoRecuperacion(data.Correo, codigo);
-
-            return Ok(new { mensaje = "Código de recuperación enviado" });
-        }
-
-        [HttpPost("resetear-contrasena")]
-        public async Task<IActionResult> Resetear([FromBody] ResetearRequest data)
-        {
-            var usuario = await _servicio.ObtenerPorCorreo(data.Correo);
-            if (usuario == null) return NotFound(new { error = "Usuario no encontrado" });
-
-            if (usuario.CodigoRecuperacion != data.Codigo || usuario.FechaExpiracionCodigo < DateTime.Now)
-                return BadRequest(new { error = "Código inválido o expirado" });
-
-            await _servicio.ActualizarContrasena(data.Correo, data.NuevaContrasena);
-            return Ok(new { mensaje = "Contraseña actualizada correctamente" });
+            return Ok(result);
         }
     }
 }

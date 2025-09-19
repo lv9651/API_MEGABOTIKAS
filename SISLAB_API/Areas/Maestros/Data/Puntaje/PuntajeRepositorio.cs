@@ -81,8 +81,8 @@ public class PuntajeRepositorio
                             FechaCreacion = reader.GetDateTime(3),
                             Activo = reader.GetBoolean(4),
                             PuedeCanjear = Convert.ToBoolean(reader.GetInt32(5)),
-                            PuntosDisponibles = reader.GetDecimal(6)
-                        });
+                            PuntosDisponibles = Convert.ToDecimal(reader.GetInt32(6))
+                    });
                     }
                 }
             }
