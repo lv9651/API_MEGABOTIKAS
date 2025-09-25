@@ -27,117 +27,50 @@ public class  PuntajeController : ControllerBase
             _servicio = servicio;
         }
 
-  
 
-        [HttpGet("obtenerProductos")]
-        public async Task<ActionResult<IEnumerable<PuntajeServicio>>> Get()
+
+
+   
+
+        [HttpPost("actualizar-puntos")]
+        public async Task<IActionResult> ActualizarPuntos([FromQuery] string correo)
         {
-            try
-            {
-                var servicios = await _servicio.ObtenerTodosLosServicios();
-                return Ok(servicios);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Error interno del servidor al obtener servicios" });
-            }
+            var result = await _servicio.ActualizarPuntosCliente(correo);
+            return Ok(result);
+        }
+
+        [HttpGet("nivel-completo")]
+        public async Task<IActionResult> ObtenerNivelCompleto([FromQuery] string correo)
+        {
+            var nivel = await _servicio.ObtenerNivelCliente(correo);
+            if (nivel == null)
+                return NotFound("No se pudo determinar nivel");
+
+            return Ok(nivel);
         }
 
 
-        [HttpGet("ventas-puntos/{idUsuario}")]
-        public async Task<IActionResult> GetVentasPuntos(int idUsuario)
+        [HttpGet("historial/{idCliente}")]
+        public async Task<IActionResult> ObtenerHistorial(int idCliente)
         {
-            try
-            {
-                var resultados = await _servicio.ObtenerVentasPuntos(idUsuario);
-                return Ok(resultados);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Error interno del servidor", detail = ex.Message });
-            }
+            var historial = await _servicio.ObtenerHistorialAsync(idCliente);
+
+            if (historial == null)
+                return NotFound(new { mensaje = "No se encontraron canjes para este cliente." });
+
+            return Ok(historial);
+        }
+        [HttpPost("canjear")]
+        public async Task<IActionResult> Canjear([FromBody] CanjeRequest request)
+        {
+            var result = await _servicio.ProcesarCanje(request);
+            return Ok(result);
         }
 
-        [HttpGet("productos-canjeables")]
-        public async Task<IActionResult> GetProductosCanjeables()
-        {
-            try
-            {
-                var resultados = await _servicio.ObtenerProductosCanjeables(null);
-                return Ok(resultados);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Error interno del servidor", detail = ex.Message });
-            }
-        }
 
-        [HttpGet("productos-canjeables/{idUsuario}")]
-        public async Task<IActionResult> GetProductosCanjeables(int idUsuario)
-        {
-            try
-            {
-                var resultados = await _servicio.ObtenerProductosCanjeables(idUsuario);
-                return Ok(resultados);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Error interno del servidor", detail = ex.Message });
-            }
-        }
 
-        [HttpPost("canjear-producto")]
-        public async Task<IActionResult> CanjearProducto([FromBody] CanjeRequest request)
-        {
-            try
-            {
-                if (request == null)
-                    return BadRequest(new { message = "Solicitud inválida" });
-
-                var resultado = await _servicio.CanjearProducto(request.IdUsuario, request.CodigoProducto, request.tipomovimiento);
-                return Ok(resultado);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Error interno del servidor", detail = ex.Message });
-            }
-        }
-
-        [HttpGet("saldo-puntos/{idUsuario}")]
-        public async Task<IActionResult> GetSaldoPuntos(int idUsuario)
-        {
-            try
-            {
-                var saldo = await _servicio.ObtenerSaldoPuntosModel(idUsuario);
-                return Ok(saldo);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Error interno del servidor", detail = ex.Message });
-            }
-        }
-
-        [HttpGet("historial-completo/{idUsuario}")]
-        public async Task<IActionResult> GetHistorialCompleto(int idUsuario)
-        {
-            try
-            {
-                var resultados = await _servicio.ObtenerHistorialCompleto(idUsuario);
-                return Ok(resultados);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Error interno del servidor", detail = ex.Message });
-            }
-        }
-
-        
         // Endpoint para obtener el historial de descuentos de un cliente
-      
+
 
 
     }

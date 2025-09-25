@@ -1,59 +1,63 @@
 ﻿namespace SISLAB_API.Areas.Maestros.Models
 {
-    public class AcumulacionPuntos
+    public class ClientePuntosResponse
     {
-        public DateTime FechaMovimiento { get; set; }
-        public string TipoMovimiento { get; set; }
-        public decimal Puntos { get; set; }
-        public string Descripcion { get; set; }
-        public string Movimiento { get; set; }
-        public string Serie { get; set; }
-        public string NumDocumento { get; set; }
-        public string Sucursal { get; set; }
+        public int IdCliente { get; set; }
+        public int PuntosTotales { get; set; }
+        public int PuntosDisponibles { get; set; }
+        public string Mensaje { get; set; }
     }
 
-    public class ProductoCanjeable
+    // Models/NivelClienteResponse.cs
+    public class NivelClienteResponse
     {
-        public int Codigo { get; set; }
-        public string Servicio { get; set; }
-        public decimal Puntaje { get; set; }
-        public DateTime FechaCreacion { get; set; }
-        public bool Activo { get; set; }
-        public bool PuedeCanjear { get; set; }
-        public decimal PuntosDisponibles { get; set; }
+        public int IdNivel { get; set; }
+        public string Nombre { get; set; }
+        public decimal Descuento { get; set; }
+        public int PuntosCliente { get; set; }
     }
 
-    public class HistorialCompleto
+    // Models/CanjeRequest.cs
+    public class CanjeRequest
     {
-        public DateTime FechaMovimiento { get; set; }
-        public string TipoMovimiento { get; set; }
-        public decimal Puntos { get; set; }
-        public string Descripcion { get; set; }
-        public string Movimiento { get; set; }
-        public string Serie { get; set; }
-        public string NumDocumento { get; set; }
-        public string Sucursal { get; set; }
-        public string ProductoCanjeado { get; set; }
+        public string Correo { get; set; }
+        public string Tipo { get; set; } // "PRODUCTO" o "BENEFICIO"
+        public string IdReferencia { get; set; } // puede ser idProducto o idBeneficio
+  
     }
 
-    public class ResultadoCanje
+    // Models/CanjeResponse.cs
+    public class CanjeResponse
     {
         public string Mensaje { get; set; }
-        public decimal PuntosUtilizados { get; set; }
-        public decimal NuevoSaldo { get; set; }
+        public int IdCliente { get; set; }
+        public int IdNivel { get; set; }
+        public string IdReferencia { get; set; }
+        public int PuntosUsados { get; set; }
+        public int PuntosRestantes { get; set; }
+    }
+
+
+    public class BeneficioNivel
+    {
+        public string Id { get; set; }
         public string Descripcion { get; set; }
+        public int Puntaje { get; set; }
+        public bool Pendiente { get; set; }
     }
 
-    public class SaldoPuntos
+    public class ProductoNivel
     {
-        public decimal SaldoPunto { get; set; }
+        public string IdProducto { get; set; }
+        public string NombreProducto { get; set; }
+        public int Puntaje { get; set; }
+        public bool Pendiente { get; set; }
     }
 
-        public class CanjeRequest
+    public class NivelCompletoResponse
     {
-        public int IdUsuario { get; set; }
-        public int CodigoProducto { get; set; }
-
-        public string tipomovimiento { get; set; }
+        public NivelClienteResponse NivelInfo { get; set; }
+        public List<BeneficioNivel> Beneficios { get; set; }
+        public List<ProductoNivel> Productos { get; set; }
     }
 }

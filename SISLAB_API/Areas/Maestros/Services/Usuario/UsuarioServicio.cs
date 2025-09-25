@@ -20,7 +20,7 @@ namespace SISLAB_API.Areas.Maestros.Services
         {
             return await _UsuarioRepository.SocialLoginAsync(usuario);
         }
-        public async Task<bool> ValidarCorreoAsync(string correo)
+        public async Task<UsuarioDto?> ObtenerUsuarioPorCorreoAsync(string correo)
         {
             return await _UsuarioRepository.ExisteCorreoAsync(correo);
         }

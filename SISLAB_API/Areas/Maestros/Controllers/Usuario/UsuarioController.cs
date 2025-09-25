@@ -35,15 +35,12 @@ namespace SISLAB_API.Areas.Maestros.Controllers
         [HttpGet("validar-correo")]
         public async Task<IActionResult> ValidarCorreo([FromQuery] string correo)
         {
-            if (string.IsNullOrEmpty(correo))
-                return BadRequest(new { mensaje = "Correo inválido" });
+            var usuario = await _servicio.ObtenerUsuarioPorCorreoAsync(correo);
 
-            bool existe = await _servicio.ValidarCorreoAsync(correo);
+            if (usuario == null)
+                return NotFound(new { mensaje = "El correo no existe en el sistema." });
 
-            if (!existe)
-                return BadRequest(new { mensaje = "El correo no está registrado" });
-
-            return Ok(new { mensaje = "Correo válido", existe });
+            return Ok(usuario);
         }
         [HttpPost("social-login")]
         public async Task<IActionResult> SocialLogin([FromBody] UsuarioDto dto)

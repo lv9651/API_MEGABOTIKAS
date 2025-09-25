@@ -57,7 +57,10 @@ public class UsuarioRepositorio
         return new SocialLoginResult { Mensaje = null, Usuario = usuarioResult };
     }
 
-    public async Task<bool> ExisteCorreoAsync(string correo)
+
+
+
+    public async Task<UsuarioDto?> ExisteCorreoAsync(string correo)
     {
         using var conn = new SqlConnection(_connectionString);
         using var cmd = new SqlCommand("clubqf.sp_ValidarCorreo", conn);
@@ -65,8 +68,22 @@ public class UsuarioRepositorio
         cmd.Parameters.AddWithValue("@Correo", correo);
 
         await conn.OpenAsync();
-        var result = await cmd.ExecuteScalarAsync();
-        return (result != null && (bool)result);
+        using var reader = await cmd.ExecuteReaderAsync();
+
+        if (await reader.ReadAsync())
+        {
+            return new UsuarioDto
+            {
+                Nombre = reader["Nombre"] as string,
+                ApellidoPaterno = reader["ApellidoPaterno"] as string,
+                ApellidoMaterno = reader["ApellidoMaterno"] as string,
+                Correo = reader["Correo"] as string,
+                TipoDocumento = reader["TipoDocumento"] as string,
+                NumeroDocumento = reader["NumeroDocumento"] as string
+            };
+        }
+
+        return null;
     }
     // Llama al stored procedure sp_ObtenerUltimaCompraCliente
     public async Task<CompraResult?> GetUltimaCompraPorDocumentoAsync(string nroDocumento)
