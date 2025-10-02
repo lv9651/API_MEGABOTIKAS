@@ -3,6 +3,8 @@ using SISLAB_API.Areas.Maestros.Services;
 
 using Microsoft.Data.SqlClient;
 using SISLAB_API.Areas.Maestros.Models;
+using API_MEGABOTIKAS.Areas.Maestros.Data.Almacen;
+using API_MEGABOTIKAS.Areas.Maestros.Services.Almacen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +38,9 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<UsuarioServicio>();
 builder.Services.AddScoped<UsuarioRepositorio>();
+
+builder.Services.AddScoped<AlmacenServicio>();
+builder.Services.AddScoped<AlmacenRepositorio>();
 
 
 

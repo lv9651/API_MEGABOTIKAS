@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using API_MEGABOTIKAS.Areas.Maestros.Models.Usuario;
+using Microsoft.AspNetCore.Mvc;
 using SISLAB_API.Areas.Maestros.Models;
 using SISLAB_API.Areas.Maestros.Services;
 
@@ -9,76 +10,26 @@ namespace SISLAB_API.Areas.Maestros.Controllers
     public class UsuarioController : ControllerBase
     {
         private readonly UsuarioServicio _servicio;
-        private readonly EmailService _emailService;
 
-        public UsuarioController(UsuarioServicio servicio, EmailService emailService)
+        public UsuarioController(UsuarioServicio servicio)
         {
-            _servicio = servicio ?? throw new ArgumentNullException(nameof(servicio));
-            _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
+            _servicio = servicio;
         }
 
-        [HttpPost("validar-compra")]
-        public async Task<IActionResult> ValidarCompra([FromBody] PurchaseValidationDto dto)
+        [HttpPost("validarUsuario_Login")]
+        public async Task<IActionResult> validarUsuario_Login([FromBody] DTOLogin login)
         {
-            if (string.IsNullOrWhiteSpace(dto.NumeroDocumento))
-                return BadRequest(new { message = "NumeroDocumento es obligatorio." });
-
-            if (string.IsNullOrWhiteSpace(dto.TipoDocumento))
-                return BadRequest(new { message = "TipoDocumento es obligatorio." });
-
-            var result = await _servicio.ValidateLastPurchaseAsync(dto);
-            if (result.IsValid)
-                return Ok(result);
-
-            return BadRequest(result);
-        }
-        [HttpGet("validar-correo")]
-        public async Task<IActionResult> ValidarCorreo([FromQuery] string correo)
-        {
-            var usuario = await _servicio.ObtenerUsuarioPorCorreoAsync(correo);
-
-            if (usuario == null)
-                return NotFound(new { mensaje = "El correo no existe en el sistema." });
-
-            return Ok(usuario);
-        }
-        [HttpPost("social-login")]
-        public async Task<IActionResult> SocialLogin([FromBody] UsuarioDto dto)
-        {
-            if (dto == null)
-                return BadRequest(new { mensaje = "Datos inválidos" });
-
-            // Convertir DTO a modelo
-            var usuario = new Usuario
+            if (string.IsNullOrWhiteSpace(login.Usuario) || string.IsNullOrWhiteSpace(login.Dni))
             {
-                Nombre = dto.Nombre,
-                ApellidoPaterno = dto.ApellidoPaterno ?? "",
-                ApellidoMaterno = dto.ApellidoMaterno ?? "",
-                Correo = dto.Correo,
-                TipoDocumento = dto.TipoDocumento,
-                NumeroDocumento = dto.NumeroDocumento,
-                FechaRegistro = DateTime.Now
-            };
-
-            // Registrar o validar usuario
-            var result = await _servicio.SocialLoginAsync(usuario);
-
-            // Si hay mensaje de error, devolverlo sin enviar correo
-            if (result == null || !string.IsNullOrEmpty(result.Mensaje))
-                return BadRequest(new { mensaje = result?.Mensaje ?? "No se pudo realizar el login social." });
-
-            // ✅ Solo si todo salió bien, enviamos correo
-            try
-            {
-                await _emailService.SendConfirmationEmailAsync(usuario.Correo, usuario.Nombre);
-            }
-            catch
-            {
-                // Loggear el error, pero no interrumpir la respuesta
-                Console.WriteLine("No se pudo enviar el correo de confirmación.");
+                return BadRequest("Usuario o DNI requeridos.");
             }
 
-            return Ok(result);
+            var esValido = await _servicio.validarUsuario_Login(login.Usuario, login.Dni);
+
+            if (!esValido)
+                return Unauthorized("Usuario o credenciales inválidas.");
+
+            return Ok(new { message = "Login correcto" });
         }
     }
 }

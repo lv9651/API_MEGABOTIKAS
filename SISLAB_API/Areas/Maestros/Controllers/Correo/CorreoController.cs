@@ -15,18 +15,9 @@ public class UsuarioController : ControllerBase
         _emailService = emailService;
     }
 
-    [HttpPost("social-loginn")]
-    public async Task<IActionResult> SocialLogin([FromBody] Usuario usuario)
+    [HttpGet("TESTTTTT")]
+    public string Test()
     {
-        // Registramos o validamos el usuario usando el servicio
-        var result = await _usuarioServicio.SocialLoginAsync(usuario);
-
-        if (!string.IsNullOrEmpty(result.Mensaje))
-            return BadRequest(new { mensaje = result.Mensaje });
-
-        // Enviar correo de confirmación
-        await _emailService.SendConfirmationEmailAsync(usuario.Correo, usuario.Nombre);
-
-        return Ok(result);
+        return "TEst;";
     }
 }
