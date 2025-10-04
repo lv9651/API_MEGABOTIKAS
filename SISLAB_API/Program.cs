@@ -27,7 +27,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        policy => policy.WithOrigins("http://localhost:3001", "http://qfclub.qf.com.pe")
+        policy => policy.WithOrigins("http://localhost:5050", "http://localhost:3001", "http://192.168.1.131:3001")
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials());
@@ -66,5 +66,6 @@ app.UseCors("AllowSpecificOrigin");
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGet("/", () => Results.Ok("✅ API MEGABOTIKAS funcionando correctamente"));
 
 app.Run();
