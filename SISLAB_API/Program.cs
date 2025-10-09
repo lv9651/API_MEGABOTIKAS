@@ -34,18 +34,20 @@ builder.Services.AddCors(options =>
 });
 
 // 🔹 Inyección de dependencias (sin interfaces)
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-builder.Services.AddScoped<EmailService>();
+
 builder.Services.AddScoped<UsuarioServicio>();
+builder.Services.AddScoped<ProductoServicio>();
 builder.Services.AddScoped<UsuarioRepositorio>();
+builder.Services.AddScoped<ProductoRepositorio>();
+builder.Services.AddScoped<CompraRepository>();
+builder.Services.AddScoped<CompraServicio>();
 
 builder.Services.AddScoped<AlmacenServicio>();
 builder.Services.AddScoped<AlmacenRepositorio>();
 
 
 
-builder.Services.AddScoped<PuntajeRepositorio>();
-builder.Services.AddScoped<PuntajeServicio>();
+
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 var app = builder.Build();
