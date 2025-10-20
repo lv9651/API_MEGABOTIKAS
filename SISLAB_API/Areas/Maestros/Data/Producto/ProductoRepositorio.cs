@@ -54,6 +54,21 @@ public class ProductoRepositorio
         return (productos, total);
     }
 
+
+    public async Task<IEnumerable<RotacionLocalDto>> ObtenerRotacionPorLocal(string codigoProducto)
+    {
+        using var connection = new SqlConnection(_connectionString);
+        var parameters = new DynamicParameters();
+        parameters.Add("@CodigoProducto", codigoProducto, DbType.String);
+
+        var result = await connection.QueryAsync<RotacionLocalDto>(
+            "dbo.sp_RotacionPorLocal_Producto",
+            parameters,
+            commandType: CommandType.StoredProcedure
+        );
+
+        return result;
+    }
     // 🔹 Para llenar los combos de filtros
     public async Task<object> ObtenerFiltrosAsync()
     {

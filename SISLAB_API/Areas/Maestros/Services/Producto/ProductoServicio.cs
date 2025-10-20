@@ -17,7 +17,10 @@ public class ProductoServicio
     {
         return await _productoRepositorio.ObtenerProductosAsync(pagina, tamanoPagina, estado, categoria, laboratorio,nombre);
     }
-
+    public async Task<IEnumerable<RotacionLocalDto>> GetRotacionPorLocal(string codigoProducto)
+    {
+        return await _productoRepositorio.ObtenerRotacionPorLocal(codigoProducto);
+    }
     public async Task<object> ObtenerFiltrosAsync()
     {
         return await _productoRepositorio.ObtenerFiltrosAsync();

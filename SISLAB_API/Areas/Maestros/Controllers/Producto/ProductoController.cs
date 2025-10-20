@@ -44,9 +44,14 @@ public class ProductoController : ControllerBase
                 return StatusCode(500, new { message = ex.Message });
             }
         }
-
-        // 🔹 GET filtros para combobox
-        [HttpGet("filtros")]
+    [HttpGet("rotacion-local/{codigoProducto}")]
+    public async Task<IActionResult> GetRotacionPorLocal(string codigoProducto)
+    {
+        var data = await _productoServicio.GetRotacionPorLocal(codigoProducto);
+        return Ok(data);
+    }
+    // 🔹 GET filtros para combobox
+    [HttpGet("filtros")]
         public async Task<ActionResult> GetFiltros()
         {
             try

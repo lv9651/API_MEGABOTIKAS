@@ -25,6 +25,9 @@ public class CompraController : ControllerBase
        [FromQuery] DateTime? fechaInicio,
        [FromQuery] DateTime? fechaFin,
        [FromQuery] string? estadoOC,
+          [FromQuery] string? Empresa,
+             [FromQuery] string? Comprador,
+                [FromQuery] string? aprobacioN_OC,
        [FromQuery] bool exportarTodo = false,
        [FromQuery] int page = 1,
        [FromQuery] int pageSize = 50)
@@ -34,7 +37,7 @@ public class CompraController : ControllerBase
             // 🔸 Ignora paginación y devuelve todo
             var (compras, total) = await _compraServicio.BuscarCompras(
                 nroOCompra, nroFactura, cdArticulo, nombreProducto,
-                fechaInicio, fechaFin, estadoOC, 1, int.MaxValue
+                fechaInicio, fechaFin, estadoOC, Empresa, Comprador, aprobacioN_OC, 1, int.MaxValue
             );
 
             return Ok(new
@@ -50,7 +53,7 @@ public class CompraController : ControllerBase
         // 🔹 Caso normal con paginación
         var (comprasPaginadas, totalFilas) = await _compraServicio.BuscarCompras(
             nroOCompra, nroFactura, cdArticulo, nombreProducto,
-            fechaInicio, fechaFin, estadoOC, page, pageSize
+            fechaInicio, fechaFin, estadoOC, Empresa, Comprador, aprobacioN_OC, page, pageSize
         );
 
         return Ok(new

@@ -25,6 +25,9 @@ public class CompraRepository
             DateTime? fechaInicio,
             DateTime? fechaFin,
             string? estadoOC,
+             string? Empresa,
+              string? Comprador,
+             string? aprobacioN_OC,
             int page = 1,
             int pageSize = 50)
     {
@@ -38,6 +41,9 @@ public class CompraRepository
         parameters.Add("@FechaInicio", fechaInicio);
         parameters.Add("@FechaFin", fechaFin);
         parameters.Add("@EstadoOC", estadoOC);
+        parameters.Add("@Empresa", Empresa);
+        parameters.Add("@Comprador", Comprador);
+        parameters.Add("@APROBACION_OC", aprobacioN_OC);
         parameters.Add("@Page", page);
         parameters.Add("@PageSize", pageSize);
         parameters.Add("@TotalCount", dbType: DbType.Int32, direction: ParameterDirection.Output);

@@ -21,12 +21,15 @@ public class CompraServicio
             DateTime? fechaInicio,
             DateTime? fechaFin,
             string? estadoOC,
+             string? Empresa,
+            string? Comprador,
+            string? aprobacioN_OC,
             int page,
             int pageSize)
     {
         return await _compraRepositorio.BuscarCompras(
             nroOCompra, nroFactura, cdArticulo, nombreProducto,
-            fechaInicio, fechaFin, estadoOC, page, pageSize
+            fechaInicio, fechaFin, estadoOC,Empresa,Comprador, aprobacioN_OC, page, pageSize
         );
     }
 }

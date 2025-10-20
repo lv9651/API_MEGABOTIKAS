@@ -2,6 +2,9 @@
 {
     public class Compra
     {
+
+        public string Empresa { get; set; }
+        public string Comprador { get; set; }
         public DateTime FecOCompra { get; set; }
         public string LABORATORIO { get; set; }
         public string NroOCompra { get; set; }
@@ -24,5 +27,8 @@
         public string lote { get; set; }
         public string fecvto { get; set; }
         public string EstadoCompra { get; set; }
+        public string condicionpago { get; set; }
+
+        public string aprobacioN_OC { get; set; }
     }
 }
